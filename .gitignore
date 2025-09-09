@@ -1,0 +1,4 @@
+.vscode
+.env
+docs
+cmd/server/wire_gen.go
