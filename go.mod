@@ -1,11 +1,13 @@
 module ai_scheduler
 
-go 1.23.4
+go 1.24.0
+
+toolchain go1.24.7
 
 require (
 	github.com/gin-gonic/gin v1.10.0
 	github.com/google/wire v0.7.0
-	github.com/ollama/ollama v0.5.7
+	github.com/ollama/ollama v0.11.10
 	github.com/spf13/viper v1.17.0
 	github.com/swaggo/files v1.0.1
 	github.com/swaggo/gin-swagger v1.6.1

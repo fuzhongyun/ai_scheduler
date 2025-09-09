@@ -6,7 +6,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"time"
 
 	"github.com/ollama/ollama/api"
@@ -25,12 +24,6 @@ func NewClient(config *config.OllamaConfig) (*Client, error) {
 		return nil, fmt.Errorf("failed to create ollama client: %w", err)
 	}
 
-	// 设置自定义HTTP客户端
-	// 创建HTTP客户端（如果需要的话）
-	_ = &http.Client{
-		Timeout: config.Timeout,
-	}
-
 	return &Client{
 		client: client,
 		config: config,
@@ -41,9 +34,10 @@ func NewClient(config *config.OllamaConfig) (*Client, error) {
 func (c *Client) Chat(ctx context.Context, messages []types.Message, tools []types.ToolDefinition) (*types.ChatResponse, error) {
 	// 构建聊天请求
 	req := &api.ChatRequest{
-		Model: c.config.Model,
+		Model:    c.config.Model,
 		Messages: make([]api.Message, len(messages)),
 		Stream:   new(bool), // 设置为false，不使用流式响应
+		Think:    &api.ThinkValue{Value: true},
 	}
 
 	// 转换消息格式
@@ -105,12 +99,15 @@ func (c *Client) convertResponse(resp *api.ChatResponse) *types.ChatResponse {
 	if len(resp.Message.ToolCalls) > 0 {
 		result.ToolCalls = make([]types.ToolCall, len(resp.Message.ToolCalls))
 		for i, toolCall := range resp.Message.ToolCalls {
+			// 转换函数参数
+			argBytes, _ := json.Marshal(toolCall.Function.Arguments)
+
 			result.ToolCalls[i] = types.ToolCall{
 				ID:   fmt.Sprintf("call_%d", i),
 				Type: "function",
 				Function: types.FunctionCall{
 					Name:      toolCall.Function.Name,
-					Arguments: json.RawMessage(fmt.Sprintf("%v", toolCall.Function.Arguments)),
+					Arguments: json.RawMessage(argBytes),
 				},
 			}
 		}
