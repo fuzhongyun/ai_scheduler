@@ -4,7 +4,7 @@ server:
 
 ollama:
   base_url: "http://localhost:11434"
-  model: "qwen:8b"
+  model: "qwen3:8b"
   timeout: 30s
 
 tools:

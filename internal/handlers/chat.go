@@ -22,22 +22,21 @@ func NewChatHandler(routerService types.RouterService) *ChatHandler {
 // ChatRequest HTTP聊天请求
 type ChatRequest struct {
 	Message string `json:"message" binding:"required" example:"北京今天天气怎么样？"`
-	Model   string `json:"model,omitempty" example:"llama2"`
 }
 
 // ChatResponse HTTP聊天响应
 type ChatResponse struct {
-	Message   string                 `json:"message" example:"北京今天天气晴朗，温度15.3°C"`
-	ToolCalls []ToolCallResponse    `json:"tool_calls,omitempty"`
-	Finished  bool                   `json:"finished" example:"true"`
+	Message   string             `json:"message" example:"北京今天天气晴朗，温度15.3°C"`
+	ToolCalls []ToolCallResponse `json:"tool_calls,omitempty"`
+	Finished  bool               `json:"finished" example:"true"`
 }
 
 // ToolCallResponse 工具调用响应
 type ToolCallResponse struct {
-	ID       string      `json:"id" example:"call_1"`
-	Type     string      `json:"type" example:"function"`
+	ID       string               `json:"id" example:"call_1"`
+	Type     string               `json:"type" example:"function"`
 	Function FunctionCallResponse `json:"function"`
-	Result   interface{} `json:"result,omitempty"`
+	Result   interface{}          `json:"result,omitempty"`
 }
 
 // FunctionCallResponse 函数调用响应
@@ -78,7 +77,6 @@ func (h *ChatHandler) Chat(c *gin.Context) {
 	// 转换为服务层请求
 	serviceReq := &types.ChatRequest{
 		Message: req.Message,
-		Model:   req.Model,
 	}
 
 	// 调用路由服务
@@ -126,7 +124,7 @@ func (h *ChatHandler) Chat(c *gin.Context) {
 // @Router /health [get]
 func (h *ChatHandler) Health(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
-		"status": "ok",
+		"status":  "ok",
 		"service": "ai-scheduler",
 	})
 }
