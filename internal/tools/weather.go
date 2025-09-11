@@ -15,10 +15,8 @@ type WeatherTool struct {
 }
 
 // NewWeatherTool 创建天气工具
-func NewWeatherTool(mockData bool) *WeatherTool {
-	return &WeatherTool{
-		mockData: mockData,
-	}
+func NewWeatherTool() *WeatherTool {
+	return &WeatherTool{}
 }
 
 // Name 返回工具名称

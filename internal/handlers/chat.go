@@ -21,14 +21,17 @@ func NewChatHandler(routerService types.RouterService) *ChatHandler {
 
 // ChatRequest HTTP聊天请求
 type ChatRequest struct {
-	Message string `json:"message" binding:"required" example:"北京今天天气怎么样？"`
+	UserInput string `json:"user_input" binding:"required" example:"考勤规则"`
+	Caller    string `json:"caller" binding:"required" example:"zltx"`
+	SessionID string `json:"session_id" example:"default"`
 }
 
 // ChatResponse HTTP聊天响应
 type ChatResponse struct {
-	Message   string             `json:"message" example:"北京今天天气晴朗，温度15.3°C"`
-	ToolCalls []ToolCallResponse `json:"tool_calls,omitempty"`
-	Finished  bool               `json:"finished" example:"true"`
+	Status   string `json:"status" example:"success"` // 处理状态
+	Message  string `json:"message" example:""`       // 响应消息
+	Data     any    `json:"data,omitempty"`           // 响应数据
+	TaskCode string `json:"task_code,omitempty"`      // 任务代码
 }
 
 // ToolCallResponse 工具调用响应
@@ -45,46 +48,31 @@ type FunctionCallResponse struct {
 	Arguments interface{} `json:"arguments"`
 }
 
-// ErrorResponse 错误响应
-type ErrorResponse struct {
-	Error   string `json:"error" example:"Invalid request"`
-	Code    int    `json:"code" example:"400"`
-	Message string `json:"message" example:"请求参数错误"`
-}
-
-// Chat 处理聊天请求
-// @Summary 智能聊天
-// @Description 发送消息给AI助手，支持工具调用
-// @Tags chat
-// @Accept json
-// @Produce json
-// @Param request body ChatRequest true "聊天请求"
-// @Success 200 {object} ChatResponse "聊天响应"
-// @Failure 400 {object} ErrorResponse "请求错误"
-// @Failure 500 {object} ErrorResponse "服务器错误"
-// @Router /api/v1/chat [post]
 func (h *ChatHandler) Chat(c *gin.Context) {
 	var req ChatRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, ErrorResponse{
-			Error:   "Invalid request",
-			Code:    http.StatusBadRequest,
-			Message: err.Error(),
+		c.JSON(http.StatusBadRequest, ChatResponse{
+			Status:  "error",
+			Message: "请求参数错误",
 		})
 		return
 	}
 
 	// 转换为服务层请求
 	serviceReq := &types.ChatRequest{
-		Message: req.Message,
+		UserInput: req.UserInput,
+		Caller:    req.Caller,
+		SessionID: req.SessionID,
+		ChatRequestMeta: types.ChatRequestMeta{
+			Authorization: c.GetHeader("Authorization"),
+		},
 	}
 
 	// 调用路由服务
 	response, err := h.routerService.Route(c.Request.Context(), serviceReq)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, ErrorResponse{
-			Error:   "Service error",
-			Code:    http.StatusInternalServerError,
+		c.JSON(http.StatusInternalServerError, ChatResponse{
+			Status:  "error",
 			Message: err.Error(),
 		})
 		return
@@ -93,38 +81,10 @@ func (h *ChatHandler) Chat(c *gin.Context) {
 	// 转换响应格式
 	httpResponse := &ChatResponse{
 		Message:  response.Message,
-		Finished: response.Finished,
-	}
-
-	// 转换工具调用
-	if len(response.ToolCalls) > 0 {
-		httpResponse.ToolCalls = make([]ToolCallResponse, len(response.ToolCalls))
-		for i, toolCall := range response.ToolCalls {
-			httpResponse.ToolCalls[i] = ToolCallResponse{
-				ID:   toolCall.ID,
-				Type: toolCall.Type,
-				Function: FunctionCallResponse{
-					Name:      toolCall.Function.Name,
-					Arguments: toolCall.Function.Arguments,
-				},
-				Result: toolCall.Result,
-			}
-		}
+		Status:   response.Status,
+		Data:     response.Data,
+		TaskCode: response.TaskCode,
 	}
 
 	c.JSON(http.StatusOK, httpResponse)
-}
-
-// Health 健康检查
-// @Summary 健康检查
-// @Description 检查服务是否正常运行
-// @Tags system
-// @Produce json
-// @Success 200 {object} map[string]string
-// @Router /health [get]
-func (h *ChatHandler) Health(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"status":  "ok",
-		"service": "ai-scheduler",
-	})
 }

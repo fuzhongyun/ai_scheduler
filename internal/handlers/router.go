@@ -27,9 +27,6 @@ func SetupRoutes(routerService types.RouterService) *gin.Engine {
 	// 创建处理器
 	chatHandler := NewChatHandler(routerService)
 
-	// 健康检查
-	r.GET("/health", chatHandler.Health)
-
 	// API路由组
 	v1 := r.Group("/api/v1")
 	{

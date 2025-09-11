@@ -7,15 +7,23 @@ import (
 
 // ChatRequest 聊天请求
 type ChatRequest struct {
-	Message string `json:"message" binding:"required"`
-	Model   string `json:"model,omitempty"`
+	UserInput       string          `json:"user_input" binding:"required"`
+	Caller          string          `json:"caller" binding:"required"`
+	SessionID       string          `json:"session_id"`
+	ChatRequestMeta ChatRequestMeta `json:"meta,omitempty"`
+}
+
+// ChatRequestMeta 聊天请求元数据
+type ChatRequestMeta struct {
+	Authorization string `json:"authorization"`
 }
 
 // ChatResponse 聊天响应
 type ChatResponse struct {
-	Message   string      `json:"message"`
-	ToolCalls []ToolCall `json:"tool_calls,omitempty"`
-	Finished  bool        `json:"finished"`
+	Status   string `json:"status"`
+	Message  string `json:"message"`
+	Data     any    `json:"data,omitempty"`
+	TaskCode string `json:"task_code,omitempty"`
 }
 
 // ToolCall 工具调用
@@ -34,8 +42,8 @@ type FunctionCall struct {
 
 // ToolDefinition 工具定义
 type ToolDefinition struct {
-	Type     string           `json:"type"`
-	Function FunctionDef      `json:"function"`
+	Type     string      `json:"type"`
+	Function FunctionDef `json:"function"`
 }
 
 // FunctionDef 函数定义

@@ -2,6 +2,7 @@ package tools
 
 import (
 	"ai_scheduler/internal/config"
+	"ai_scheduler/internal/constants"
 	"ai_scheduler/pkg/types"
 	"context"
 	"encoding/json"
@@ -21,7 +22,7 @@ func NewManager(config *config.ToolsConfig) *Manager {
 
 	// 注册天气工具
 	if config.Weather.Enabled {
-		weatherTool := NewWeatherTool(config.Weather.MockData)
+		weatherTool := NewWeatherTool()
 		m.tools[weatherTool.Name()] = weatherTool
 	}
 
@@ -30,6 +31,24 @@ func NewManager(config *config.ToolsConfig) *Manager {
 		calcTool := NewCalculatorTool()
 		m.tools[calcTool.Name()] = calcTool
 	}
+
+	// 注册知识库工具
+	// if config.Knowledge.Enabled {
+	// 	knowledgeTool := NewKnowledgeTool()
+	// 	m.tools[knowledgeTool.Name()] = knowledgeTool
+	// }
+
+	// 注册直连天下订单详情工具
+	if config.ZltxOrderDetail.Enabled {
+		zltxOrderDetailTool := NewZltxOrderDetailTool(config.ZltxOrderDetail)
+		m.tools[zltxOrderDetailTool.Name()] = zltxOrderDetailTool
+	}
+
+	// 注册直连天下订单日志工具
+	// if config.ZltxOrderLog.Enabled {
+	// 	zltxOrderLogTool := NewZltxOrderLogTool(config.ZltxOrderLog)
+	// 	m.tools[zltxOrderLogTool.Name()] = zltxOrderLogTool
+	// }
 
 	return m
 }
@@ -50,11 +69,12 @@ func (m *Manager) GetAllTools() []types.Tool {
 }
 
 // GetToolDefinitions 获取所有工具定义
-func (m *Manager) GetToolDefinitions() []types.ToolDefinition {
+func (m *Manager) GetToolDefinitions(caller constants.Caller) []types.ToolDefinition {
 	definitions := make([]types.ToolDefinition, 0, len(m.tools))
 	for _, tool := range m.tools {
 		definitions = append(definitions, tool.Definition())
 	}
+
 	return definitions
 }
 

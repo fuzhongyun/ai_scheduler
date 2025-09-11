@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 8090
   host: "0.0.0.0"
 
 ollama:
@@ -7,12 +7,28 @@ ollama:
   model: "qwen3:8b"
   timeout: 30s
 
+# 模型参数
+modelParam:
+  temperature: 0.7
+  max_tokens: 2000
+
 tools:
   weather:
     enabled: true
-    mock_data: true
   calculator:
     enabled: true
+  zltxOrderDetail: # 直连天下订单详情
+    enabled: true
+    base_url: https://gateway.dev.cdlsxd.cn
+    biz_system: "zltx"
+  zltxOrderLog: # 直连天下订单日志
+    enabled: true
+    base_url: https://gateway.dev.cdlsxd.cn
+    biz_system: "zltx"
+  knowledge: # 知识库
+    enabled: true
+    base_url: http://117.175.169.61:8080
+    api_key: sk-EfnUANKMj3DUOiEPJZ5xS8SGMsbO6be_qYAg9uZ8T3zyoFM-
 
 logging:
   level: "info"

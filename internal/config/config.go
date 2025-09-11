@@ -30,14 +30,19 @@ type OllamaConfig struct {
 
 // ToolsConfig 工具配置
 type ToolsConfig struct {
-	Weather    ToolConfig `mapstructure:"weather"`
-	Calculator ToolConfig `mapstructure:"calculator"`
+	Weather         ToolConfig `mapstructure:"weather"`
+	Calculator      ToolConfig `mapstructure:"calculator"`
+	ZltxOrderDetail ToolConfig `mapstructure:"zltxOrderDetail"`
+	ZltxOrderLog    ToolConfig `mapstructure:"zltxOrderLog"`
+	Knowledge       ToolConfig `mapstructure:"knowledge"`
 }
 
 // ToolConfig 单个工具配置
 type ToolConfig struct {
-	Enabled  bool `mapstructure:"enabled"`
-	MockData bool `mapstructure:"mock_data"`
+	Enabled   bool   `mapstructure:"enabled"`
+	BaseURL   string `mapstructure:"base_url"`
+	APIKey    string `mapstructure:"api_key"`
+	BizSystem string `mapstructure:"biz_system"`
 }
 
 // LoggingConfig 日志配置
